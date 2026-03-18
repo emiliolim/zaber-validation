@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Load the data
-path = Path("data") / "Run.xlsx"
+path = Path("data") / "test.xlsx"
 df = pd.read_excel(path, index_col=0)
 
 # Inspect column names and first few rows

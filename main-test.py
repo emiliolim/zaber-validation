@@ -40,6 +40,9 @@ def test():
    else:
       print("Running real test")
       futek = FUTEKDeviceCLI()
+      load_cell_a_serial = futek.SerialNumber_A
+      load_cell_b_serial = futek.SerialNumber_B if futek.SerialNumber_B else "N/A"
+      load_cell_c_serial = futek.SerialNumber_C if futek.SerialNumber_C else "N/A"
       
 
    # Initialize zaber connection
@@ -52,7 +55,8 @@ def test():
    if zaber.axis.is_parked():
       zaber.axis.unpark()
    currentPosition = zaber.axis.get_position()
-
+   # Extract = 4
+   # zaber.axis.move_relative((Extract), Units.LENGTH_MILLIMETRES)
    # Initial variables
    readings_arrA = [0] * 12000
    readings_arrB = [0] * 12000
@@ -70,6 +74,27 @@ def test():
    if user == "-1":
       print("Exiting Early")
       return
+   
+   file_name = input("Enter file name for this run: ")
+   if file_name == "":
+      file_name = "Run"
+
+   # Check if load cells are flipped and adjust polarity accordingly
+   query_A = input(f"Is Load Cell {load_cell_a_serial} flipped? (y/n): ")
+   if query_A.lower() == "y":
+      pol_A = -1
+   else:
+      pol_A = 1
+   query_B = input(f"Is Load Cell {load_cell_b_serial} flipped? (y/n): ")
+   if query_B.lower() == "y":
+      pol_B = -1
+   else:
+      pol_B = 1
+   query_C = input(f"Is Load Cell {load_cell_c_serial} flipped? (y/n): ")
+   if query_C.lower() == "y":
+      pol_C = -1
+   else:
+      pol_C = 1
 
    print("Beginning Validation Test: Moving loadcell downwards")
    zaber.axis.move_velocity(SPEED*0.1, Units.VELOCITY_MILLIMETRES_PER_SECOND)
@@ -81,12 +106,12 @@ def test():
          reading_C = dataC[force_idx]
       else:
          reading_A = futek.getNormalData_A() # Read force value
-         reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_A = reading_A * (4.44822 * pol_A) # convert pounds to Newtons and change polarity
          reading_B = futek.getNormalData_B() # Read force value
-         reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
-         reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
-         # reading_C = futek.getNormalData_C() # Read force value
-         # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_B = reading_B * (4.44822 * pol_B) # convert pounds to Newtons and change polarity
+         #reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+         reading_C = futek.getNormalData_C() # Read force value
+         reading_C = reading_C * (4.44822 * pol_C) # convert pounds to Newtons and change polarity
 
       if init_flag:
          init_val_A = reading_A
@@ -118,12 +143,12 @@ def test():
                reading_C = dataC[force_idx] if force_idx < len(dataC) else dataC[-1]
             else:
                reading_A = futek.getNormalData_A() # Read force value
-               reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+               reading_A = reading_A * (4.44822 * pol_A) # convert pounds to Newtons and change polarity
                reading_B = futek.getNormalData_B() # Read force value
-               reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
-               reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
-               # reading_C = futek.getNormalData_C() # Read force value
-               # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
+               reading_B = reading_B * (4.44822 * pol_B) # convert pounds to Newtons and change polarity
+               #reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+               reading_C = futek.getNormalData_C() # Read force value
+               reading_C = reading_C * (4.44822 * pol_C) # convert pounds to Newtons and change polarity
                
             stage_force_A = reading_A - init_val_A
             stage_force_B = reading_B - init_val_B
@@ -149,12 +174,12 @@ def test():
          reading_C = 0
       else:
          reading_A = futek.getNormalData_A() # Read force value
-         reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_A = reading_A * (4.44822 * pol_A) # convert pounds to Newtons and change polarity
          reading_B = futek.getNormalData_B() # Read force value
-         reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
-         reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
-         # reading_C = futek.getNormalData_C() # Read force value
-         # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_B = reading_B * (4.44822 * pol_B) # convert pounds to Newtons and change polarity
+         #reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+         reading_C = futek.getNormalData_C() # Read force value
+         reading_C = reading_C * (4.44822 * pol_C) # convert pounds to Newtons and change polarity
 
       # Log the residual of current - initial force
       stage_force_A = reading_A - init_val_A
@@ -180,15 +205,12 @@ def test():
    
    zaber.axis.move_absolute(17, Units.LENGTH_MILLIMETRES)
    path = Path(SAVE_PATH)
-   file_name = "Run.xlsx" # create file name
+   file_name = file_name + ".xlsx" # create file name
    path = path / file_name
    workbook = xlsxwriter.Workbook(path)
    worksheet = workbook.add_worksheet("Run")
 
    # Create Column headers
-   load_cell_a_serial = futek.SerialNumber_A
-   load_cell_b_serial = futek.SerialNumber_B
-   load_cell_c_serial = futek.SerialNumber_C if futek.SerialNumber_C else "N/A"
    worksheet.write('A1', 'Index')
    worksheet.write('B1', f'Load Cell {load_cell_a_serial}')
    worksheet.write('C1', f'Load Cell {load_cell_b_serial}')

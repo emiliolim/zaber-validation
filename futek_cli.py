@@ -56,10 +56,10 @@ class FUTEKDeviceCLI:
         return FUTEK.Devices.DeviceUSB225.GetChannelXReading(self.USB225_A, 0)
 
     def getNormalData_B(self):
-        return FUTEK.Devices.DeviceUSB225.GetChannelXReading(self.USB225_B, 0)
+        return FUTEK.Devices.DeviceUSB225.GetChannelXReading(self.USB225_B, 0) if self.USB225_B else 0
 
     def getNormalData_C(self):
-        return FUTEK.Devices.DeviceUSB225.GetChannelXReading(self.USB225_C, 0)
+        return FUTEK.Devices.DeviceUSB225.GetChannelXReading(self.USB225_C, 0) if self.USB225_C else 0
 
     def connect(self):
         try:
