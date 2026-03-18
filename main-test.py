@@ -3,7 +3,7 @@ from zaber_motion import Units
 from pathlib import Path
 from datetime import datetime
 from time import sleep
-#from futek_cli import FUTEKDeviceCLI
+from futek_cli import FUTEKDeviceCLI
 import xlsxwriter
 import numpy as np
 
@@ -20,13 +20,13 @@ Outputs:
  -  Excel files for force over time of all 3 loadcells (time should be synched) 
 """
 
-SPEED = 0.5
+SPEED = 1 # mm/s
 STEP_SIZE_NEWTONS = 1
-STEP_SIZE_MS = 1000
+STEP_SIZE_MS = 5000
 UPPER_LIMIT_NEWTONS = 20
 SAVE_PATH = "./data/"
 
-TEST_MODE = 1
+TEST_MODE = 0
 
 def test():
    """
@@ -39,7 +39,7 @@ def test():
       dataC = np.linspace(0, 40, 160)
    else:
       print("Running real test")
-      #futek = FUTEKDeviceCLI()
+      futek = FUTEKDeviceCLI()
       
 
    # Initialize zaber connection
@@ -80,9 +80,13 @@ def test():
          reading_B = dataB[force_idx]
          reading_C = dataC[force_idx]
       else:
-         pass
-         # reading_force = futek.getNormalData() # Read force value
-         # reading_force = reading_force * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_A = futek.getNormalData_A() # Read force value
+         reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_B = futek.getNormalData_B() # Read force value
+         reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+         # reading_C = futek.getNormalData_C() # Read force value
+         # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
 
       if init_flag:
          init_val_A = reading_A
@@ -113,7 +117,14 @@ def test():
                reading_B = dataB[force_idx] if force_idx < len(dataB) else dataB[-1]
                reading_C = dataC[force_idx] if force_idx < len(dataC) else dataC[-1]
             else:
-               pass
+               reading_A = futek.getNormalData_A() # Read force value
+               reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+               reading_B = futek.getNormalData_B() # Read force value
+               reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
+               reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+               # reading_C = futek.getNormalData_C() # Read force value
+               # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
+               
             stage_force_A = reading_A - init_val_A
             stage_force_B = reading_B - init_val_B
             stage_force_C = reading_C - init_val_C
@@ -137,9 +148,13 @@ def test():
          reading_B = 0
          reading_C = 0
       else:
-         pass
-         # reading_force = futek.getNormalData() # Read force value
-         # reading_force = reading_force * (-4.44822) # convert pounds to Newtons and change polarity  
+         reading_A = futek.getNormalData_A() # Read force value
+         reading_A = reading_A * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_B = futek.getNormalData_B() # Read force value
+         reading_B = reading_B * (-4.44822) # convert pounds to Newtons and change polarity
+         reading_C = 0 # placeholder for top loadcell reading since we don't have a 3rd loadcell yet
+         # reading_C = futek.getNormalData_C() # Read force value
+         # reading_C = reading_C * (-4.44822) # convert pounds to Newtons and change polarity
 
       # Log the residual of current - initial force
       stage_force_A = reading_A - init_val_A
@@ -171,10 +186,13 @@ def test():
    worksheet = workbook.add_worksheet("Run")
 
    # Create Column headers
+   load_cell_a_serial = futek.SerialNumber_A
+   load_cell_b_serial = futek.SerialNumber_B
+   load_cell_c_serial = futek.SerialNumber_C if futek.SerialNumber_C else "N/A"
    worksheet.write('A1', 'Index')
-   worksheet.write('B1', 'Load Cell (A)')
-   worksheet.write('C1', 'Load Cell (B)')
-   worksheet.write('D1', 'Load Cell (C)')
+   worksheet.write('B1', f'Load Cell {load_cell_a_serial}')
+   worksheet.write('C1', f'Load Cell {load_cell_b_serial}')
+   worksheet.write('D1', f'Load Cell {load_cell_c_serial}')
    worksheet.write('E1', 'Time')
 
    # Time Array
@@ -192,8 +210,8 @@ def test():
    workbook.close()
 
 
-   # futek.stop()
-   # futek.exit()
+   futek.stop()
+   futek.exit()
    zaber.disconnect()
 
 
