@@ -20,14 +20,20 @@ Outputs:
  -  Excel files for force over time of all 3 loadcells (time should be synched) 
 """
 
+####################
+# TESTING PARAMETERS
+####################
 SPEED = 1 # mm/s
 STEP_SIZE_NEWTONS = 1
 STEP_SIZE_MS = 5000
-UPPER_LIMIT_NEWTONS = 20
+UPPER_LIMIT_NEWTONS = 32
 SAVE_PATH = "./data/"
 
 TEST_MODE = 0
 
+####################
+# TEST FUNCTION
+####################
 def test():
    """
    Test the zaber stage to move downwards and stop when it reads 20 from an array
@@ -55,12 +61,12 @@ def test():
    if zaber.axis.is_parked():
       zaber.axis.unpark()
    currentPosition = zaber.axis.get_position()
-   # Extract = 4
+   # Extract = 10
    # zaber.axis.move_relative((Extract), Units.LENGTH_MILLIMETRES)
    # Initial variables
-   readings_arrA = [0] * 12000
-   readings_arrB = [0] * 12000
-   readings_arrC = [0] * 12000
+   readings_arrA = [0] * 18000
+   readings_arrB = [0] * 18000
+   readings_arrC = [0] * 18000
    init_time = datetime.now()
    init_seconds = init_time.second + init_time.microsecond / 1e6
    init_flag = True # Flag for the first iteration of the loop
