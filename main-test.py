@@ -67,6 +67,7 @@ def test():
    readings_arrA = [0] * 18000
    readings_arrB = [0] * 18000
    readings_arrC = [0] * 18000
+   zaber_positions = [0] * 18000
    init_time = datetime.now()
    init_seconds = init_time.second + init_time.microsecond / 1e6
    init_flag = True # Flag for the first iteration of the loop
@@ -133,6 +134,7 @@ def test():
       readings_arrA[force_idx] = stage_force_A
       readings_arrB[force_idx] = stage_force_B
       readings_arrC[force_idx] = stage_force_C
+      zaber_positions[force_idx] = (zaber.axis.get_position() *0.047625)/1000 # convert to mm
       force_idx = force_idx + 1
       print("Force Value for LC A: " + str(stage_force_A))
 
@@ -162,6 +164,7 @@ def test():
             readings_arrA[force_idx] = stage_force_A
             readings_arrB[force_idx] = stage_force_B
             readings_arrC[force_idx] = stage_force_C
+            zaber_positions[force_idx] = (zaber.axis.get_position() *0.047625)/1000 # convert to mm
             force_idx = force_idx + 1
          zaber.axis.move_velocity(SPEED*0.1, Units.VELOCITY_MILLIMETRES_PER_SECOND)
          last_step_force = current_step
@@ -195,6 +198,7 @@ def test():
       readings_arrA[force_idx] = stage_force_A
       readings_arrB[force_idx] = stage_force_B
       readings_arrC[force_idx] = stage_force_C
+      zaber_positions[force_idx] = (zaber.axis.get_position() *0.047625)/1000 # convert to mm
       force_idx = force_idx + 1
       # print("Force Value: " + str(stage_force))
 
@@ -221,7 +225,8 @@ def test():
    worksheet.write('B1', f'Load Cell {load_cell_a_serial}')
    worksheet.write('C1', f'Load Cell {load_cell_b_serial}')
    worksheet.write('D1', f'Load Cell {load_cell_c_serial}')
-   worksheet.write('E1', 'Time')
+   worksheet.write('E1', 'Zaber Position (mm)')
+   worksheet.write('F1', 'Time')
 
    # Time Array
    time = np.linspace(init_seconds, 
@@ -234,7 +239,8 @@ def test():
       worksheet.write(index+1, 1, readings_arrA[index])
       worksheet.write(index+1, 2, readings_arrB[index])
       worksheet.write(index+1, 3, readings_arrC[index])
-      worksheet.write(index+1, 4, time[index])
+      worksheet.write(index+1, 4, zaber_positions[index])
+      worksheet.write(index+1, 5, time[index])
    workbook.close()
 
 
